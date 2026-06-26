@@ -16,38 +16,38 @@ export function strokeOptions(tool: ToolType, size: number) {
     case "pen":
       return {
         size,
-        thinning: 0.6,
-        smoothing: 0.6,
-        streamline: 0.55,
+        thinning: 0.38,       // was 0.6 — less aggressive thinning keeps letter joins solid
+        smoothing: 0.5,       // was 0.6
+        streamline: 0.22,     // was 0.55 — low streamline = stroke follows cursor closely, no lag
         simulatePressure: true,
       };
     case "pencil":
       return {
-        size: size * 0.85,
-        thinning: 0.45,
-        smoothing: 0.55,
-        streamline: 0.5,
+        size: size * 0.9,     // was 0.85
+        thinning: 0.3,        // was 0.45
+        smoothing: 0.45,      // was 0.55
+        streamline: 0.18,     // was 0.5 — very responsive for handwriting feel
         simulatePressure: true,
       };
     case "marker":
       return {
         size: size * 1.5,
-        thinning: 0.15,
+        thinning: 0.1,        // was 0.15 — more consistent width for block letters
         smoothing: 0.5,
-        streamline: 0.5,
+        streamline: 0.3,      // was 0.5 — follows writing hand without stuttering
         simulatePressure: false,
       };
     case "highlighter":
       return {
         size: size * 2.6,
         thinning: 0,
-        smoothing: 0.45,
-        streamline: 0.45,
+        smoothing: 0.4,       // was 0.45
+        streamline: 0.28,     // was 0.45 — keeps up with fast highlighting sweeps
         simulatePressure: false,
       };
     case "eraser":
     default:
-      return { size, thinning: 0.5, smoothing: 0.5, streamline: 0.5 };
+      return { size, thinning: 0.5, smoothing: 0.5, streamline: 0.3 };
   }
 }
 

@@ -143,10 +143,10 @@ export default function Whiteboard() {
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (!drawing.current) return;
-      const [x, y] = toVirtual(e.clientX, e.clientY);
-      const pressure = e.pressure > 0 ? e.pressure : 0.5;
 
+      // Use latest position for drag (no coalescing needed)
       if (tool === "select" && drag) {
+        const [x, y] = toVirtual(e.clientX, e.clientY);
         const dx = x - drag.sx;
         const dy = y - drag.sy;
         if (drag.mode === "move") {
@@ -159,17 +159,34 @@ export default function Whiteboard() {
         return;
       }
 
+      // Collect ALL pointer positions the browser captured since the last frame.
+      // Without this, fast handwriting skips points between frames → choppy strokes.
+      const coalesced = (e.nativeEvent as PointerEvent).getCoalescedEvents?.() ?? [];
+      const events = coalesced.length > 0 ? coalesced : [e.nativeEvent as PointerEvent];
+
       if (tool === "eraser") {
+        // Eraser only needs the latest position
+        const [x, y] = toVirtual(e.clientX, e.clientY);
         setErasing((prev) => {
           const next = new Set(prev);
           for (const s of board.strokes)
             if (!next.has(s.id) && pointNearStroke(x, y, s, 14)) next.add(s.id);
           return next;
         });
-      } else if (tool === "laser") {
-        setLiveLaser((prev) => (prev ? [...prev, [x, y, pressure]] : [[x, y, pressure]]));
+        return;
+      }
+
+      // Batch all coalesced points into a single state update
+      const newPoints: Point[] = events.map((ev) => {
+        const [x, y] = toVirtual(ev.clientX, ev.clientY);
+        const pressure = ev.pressure > 0 ? ev.pressure : 0.5;
+        return [x, y, pressure];
+      });
+
+      if (tool === "laser") {
+        setLiveLaser((prev) => (prev ? [...prev, ...newPoints] : newPoints));
       } else {
-        setLive((prev) => (prev ? [...prev, [x, y, pressure]] : [[x, y, pressure]]));
+        setLive((prev) => (prev ? [...prev, ...newPoints] : newPoints));
       }
     },
     [board.strokes, drag, toVirtual, tool]
