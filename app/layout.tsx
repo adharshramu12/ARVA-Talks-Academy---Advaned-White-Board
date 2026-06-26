@@ -7,7 +7,11 @@ export const metadata: Metadata = {
   description:
     "The premium teaching whiteboard for Arva Talks Academy mentors. Unlimited boards, clean pens, PPTs, polls and live reactions.",
   icons: {
-    icon: "/logo.png",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/logo.png", type: "image/png" },
+    ],
+    apple: "/logo.png",
   },
 };
 
